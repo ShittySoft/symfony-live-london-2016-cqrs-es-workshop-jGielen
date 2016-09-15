@@ -12,9 +12,4 @@ final class NewBuildingWasRegistered extends AggregateChanged
     {
         return $this->payload['name'];
     }
-
-    public static function fromUsernameAndBuilding($username, $building)
-    {
-
-    }
 }

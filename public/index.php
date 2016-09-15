@@ -67,21 +67,11 @@ call_user_func(function () {
     });
 
     $app->post('/checkin/{buildingId}', function (Request $request, Response $response) use ($sm) : Response {
-        $buildingId = Uuid::fromString($request->getAttribute('buildingId'));
 
-        $commandBus = $sm->get(CommandBus::class);
-        $commandBus->dispatch(Command\RegisterNewCheckIn::fromUsernameAndBuilding($request->getParsedBody()['username'],$buildingId));
-
-        return $response->withAddedHeader('Location', '/building/' . $buildingId);
     });
 
     $app->post('/checkout/{buildingId}', function (Request $request, Response $response) use ($sm) : Response {
-        $buildingId = Uuid::fromString($request->getAttribute('buildingId'));
 
-        $commandBus = $sm->get(CommandBus::class);
-        $commandBus->dispatch(Command\RegisterNewCheckOut::fromUsernameAndBuilding($request->getParsedBody()['username'],$buildingId));
-
-        return $response->withAddedHeader('Location', '/building/' . $buildingId);
     });
 
     $app->pipeDispatchMiddleware();
