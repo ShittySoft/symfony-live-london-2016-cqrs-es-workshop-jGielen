@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Building\Domain\Aggregate;
 
+use Building\Domain\Authorization\AuthorizedUsersInterface;
 use Building\Domain\DomainEvent\NewBuildingWasRegistered;
+use Building\Domain\DomainEvent\UserCheckedMultipleTimesIntoBuilding;
 use Building\Domain\DomainEvent\UserWasCheckedIntoBuilding;
-use Building\Domain\DomainEvent\UserWasCheckedOutBuilding;
+use Building\Domain\DomainEvent\UserWasCheckedOutOfBuilding;
 use Prooph\EventSourcing\AggregateRoot;
 use Rhumsaa\Uuid\Uuid;
 
@@ -23,11 +25,11 @@ final class Building extends AggregateRoot
     private $name;
 
     /**
-     * @var array
+     * @var <string, bool>array
      */
     private $checkedInUsers = [];
 
-    public static function new($name) : self
+    public static function new(string $name) : self
     {
         $self = new self();
 
@@ -41,36 +43,47 @@ final class Building extends AggregateRoot
         return $self;
     }
 
-    public function checkInUser(string $username)
+    public function checkInUser(AuthorizedUsersInterface $authorizedUsers, string $username)
     {
-        if (array_key_exists($username, $this->checkedInUsers)) {
-            throw new \DomainException(sprintf(
-               'Username %s is already checked into the building %s',
-                $username,
-                $this->uuid->toString()
-            ));
+        if (! $authorizedUsers->has($username)) {
+            throw new \DomainException('YOU ARE NOT AUTHORIZED, ACHTUNG!');
         }
+
+        $doubleCheckIn = array_key_exists($username, $this->checkedInUsers);
 
         $this->recordThat(UserWasCheckedIntoBuilding::fromUsernameAndBuilding(
             $username,
             $this->uuid
         ));
+
+        if ($doubleCheckIn) {
+            $this->recordThat(UserCheckedMultipleTimesIntoBuilding::fromUsernameAndBuilding(
+                $username,
+                $this->uuid
+            ));
+        }
     }
 
     public function checkOutUser(string $username)
     {
-        if (!array_key_exists($username, $this->checkedInUsers)) {
+        if (! array_key_exists($username, $this->checkedInUsers)) {
             throw new \DomainException(sprintf(
-                'Username %s is already checked out the building %s',
+                'User "%s" is not checked into the building "%s"',
                 $username,
                 $this->uuid->toString()
             ));
         }
 
-        $this->recordThat(UserWasCheckedOutBuilding::fromUsernameAndBuilding(
+        $this->recordThat(UserWasCheckedOutOfBuilding::fromUsernameAndBuilding(
             $username,
             $this->uuid
         ));
+    }
+
+    public function whenNewBuildingWasRegistered(NewBuildingWasRegistered $event)
+    {
+        $this->uuid = $event->uuid();
+        $this->name = $event->name();
     }
 
     public function whenUserWasCheckedIntoBuilding(UserWasCheckedIntoBuilding $event)
@@ -78,15 +91,14 @@ final class Building extends AggregateRoot
         $this->checkedInUsers[$event->username()] = true;
     }
 
-    public function whenUserWasCheckedOutBuilding(UserWasCheckedOutBuilding $event)
+    public function whenUserWasCheckedOutOfBuilding(UserWasCheckedOutOfBuilding $event)
     {
         unset($this->checkedInUsers[$event->username()]);
     }
 
-    public function whenNewBuildingWasRegistered(NewBuildingWasRegistered $event)
+    public function whenUserCheckedMultipleTimesIntoBuilding(UserCheckedMultipleTimesIntoBuilding $event)
     {
-        $this->uuid = $event->uuid();
-        $this->name = $event->name();
+        // empty for now
     }
 
     /**

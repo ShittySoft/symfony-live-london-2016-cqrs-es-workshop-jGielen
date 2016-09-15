@@ -7,12 +7,13 @@ namespace Building\Domain\Command;
 use Prooph\Common\Messaging\Command;
 use Rhumsaa\Uuid\Uuid;
 
-final class RegisterNewCheckOut extends Command
+final class CheckUserIntoBuilding extends Command
 {
     /**
      * @var string
      */
     private $username;
+
     /**
      * @var Uuid
      */
@@ -48,7 +49,7 @@ final class RegisterNewCheckOut extends Command
     {
         return [
             'username' => $this->username,
-            'building' => $this->building()->toString(),
+            'building' => $this->building->toString(),
         ];
     }
 

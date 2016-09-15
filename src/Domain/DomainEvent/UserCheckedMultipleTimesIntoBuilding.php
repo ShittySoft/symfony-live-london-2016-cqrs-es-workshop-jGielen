@@ -7,7 +7,7 @@ namespace Building\Domain\DomainEvent;
 use Prooph\EventSourcing\AggregateChanged;
 use Rhumsaa\Uuid\Uuid;
 
-final class UserWasCheckedIntoBuilding extends AggregateChanged
+final class UserCheckedMultipleTimesIntoBuilding extends AggregateChanged
 {
     public static function fromUsernameAndBuilding(string $username, Uuid $building) : self
     {
