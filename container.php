@@ -11,6 +11,8 @@ use Bernard\QueueFactory;
 use Bernard\QueueFactory\PersistentFactory;
 use Building\Domain\Aggregate\Building;
 use Building\Domain\Command;
+use Building\Domain\DomainEvent\UserWasCheckedIntoBuilding;
+use Building\Domain\DomainEvent\UserWasCheckedOutBuilding;
 use Building\Domain\Repository\BuildingRepositoryInterface;
 use Building\Infrastructure\Repository\BuildingRepository;
 use Doctrine\DBAL\Connection;
@@ -218,6 +220,22 @@ return new ServiceManager([
                 $building->checkOutUser($command->username());
                 $buildings->add($building);
             };
+        },
+
+        UserWasCheckedIntoBuilding::class . '-projectors' => function (ContainerInterface $container) {
+            return[
+                function(UserWasCheckedOutBuilding $event) {
+                    error_log('check in: ' . $event->username());
+                },
+            ];
+        },
+
+        UserWasCheckedOutBuilding::class . '-projectors' => function () {
+            return[
+                function(UserWasCheckedOutBuilding $event) {
+                    error_log('check out: ' . $event->username());
+                },
+            ];
         },
         BuildingRepositoryInterface::class => function (ContainerInterface $container) : BuildingRepositoryInterface {
             return new BuildingRepository(
