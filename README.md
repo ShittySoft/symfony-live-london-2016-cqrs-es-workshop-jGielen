@@ -38,8 +38,8 @@ The MVP of the application has following specification:
 Following steps are to be implemented:
 
 - [x] Ability to register a new building (already provided)
-- [ ] Ability to check-in with a username and a building identifier (skeleton code provided)
-- [ ] Ability to check-out with a username and a building identifier (skeleton code provided)
+- [x] Ability to check-in with a username and a building identifier (skeleton code provided)
+- [x] Ability to check-out with a username and a building identifier (skeleton code provided)
 - [ ] Provide console output (STDERR) every time a check-in happens (event handler)
 - [ ] Provide console output (STDERR) every time a check-out happens (event handler)
 - [ ] Provide a file per building (accessible via HTTP) with usernames of currently checked-in persons
