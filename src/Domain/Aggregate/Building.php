@@ -57,9 +57,30 @@ final class Building extends AggregateRoot
         ));
     }
 
+    public function checkOutUser(string $username)
+    {
+        if (!array_key_exists($username, $this->checkedInUsers)) {
+            throw new \DomainException(sprintf(
+                'Username %s is already checked out the building %s',
+                $username,
+                $this->uuid->toString()
+            ));
+        }
+
+        $this->recordThat(UserWasCheckedOutBuilding::fromUsernameAndBuilding(
+            $username,
+            $this->uuid
+        ));
+    }
+
     public function whenUserWasCheckedIntoBuilding(UserWasCheckedIntoBuilding $event)
     {
         $this->checkedInUsers[$event->username()] = true;
+    }
+
+    public function whenUserWasCheckedOutBuilding(UserWasCheckedOutBuilding $event)
+    {
+        unset($this->checkedInUsers[$event->username()]);
     }
 
     public function whenNewBuildingWasRegistered(NewBuildingWasRegistered $event)
